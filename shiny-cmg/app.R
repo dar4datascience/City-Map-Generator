@@ -1,52 +1,118 @@
 library(shiny)
 library(ggplot2)
 library(bslib)
+library(waiter)
+library(dplyr)
+source("cmp-utils.R")
 
+world_cities <- maps::world.cities |>
+  select(
+    name,
+    country.etc,
+    lat,
+    long
+  )
 
 ui <- page_navbar(
+  id = "inNavbar",
+  #useHostess(),
   title = "🌌Shiny Night Lights🌃",
   selected = "How to Use?",
   collapsible = TRUE,
-  theme = bslib::bs_theme(),
+  theme = bs_theme(bootswatch = "cyborg"),
   sidebar = sidebar(
-    title = "Data from X to Y",
+    title = "Type the city your wish to randomly map:",
     markdown(
       mds = c(
         "What is an Alcadia?"
       )
     ),
-    radioButtons(
-      inputId = "radio-cdmx",
-      label = "Select View",
-      choices = list("CDMX" = "cdmx", "Alcaldia" = "alcaldia"),
-      width = "100%"
-    ),
-    selectInput(
-      inputId = "alcaldia-selection",
-      label = "Select Alcaldia",
-      choices = list("choice a" = "a", "Value2" = "value2"),
-      selected = "a"
-    )
+    textInput(inputId = "city", label = "City", value = "Coyoacan, Mexico City"),
+    actionButton(inputId = "query_button", label = "Map it!")
   ),
-  tabPanel(
-    title = "Home",
+  nav_panel(
+    title = "How to Use?",
     markdown(
       mds = c(
         "hello _world_ ",
-        "# hellow ",
+        "# WORKING ON IT..... ",
         "## world"
       )
     )
   ),
-  tabPanel(
+  nav_panel(
+    useWaiter(),
     title = "Map Maker",
-    "Working on it"
-  )
+    value = "mappy",
+    card(
+      title = "Map Maker",
+      plotOutput("map")
+    )
+    )
 )
 
 
-server <- function(input, output) {
+server <- function(input, output, session) {
 
+  mymap <- reactiveValues(dmap = "")
+  # create a waiter
+  w <- Waiter$new(html= spin_pong())
+
+   observeEvent(input$query_button, {
+
+    # updateNavlistPanel(session,
+    #                    "inNavbar",
+    #                    selected = "mappy")
+
+    w$show()
+
+    place_base_information <- get_place_base_information(input$city)
+
+
+
+    random_point <- select_a_random_point_from_place(place_base_information)
+
+
+    #p(message = sprintf("Step  %g", 2))
+
+    plot_csr <- determine_best_csr(random_point)
+
+    #p(message = sprintf("Step  %g", 3))
+
+    circle_mask <- make_a_circle_mask(random_point, plot_csr)
+
+
+    #p(message = sprintf("Step  %g", 4))
+
+    query <- query_osm_data(circle_mask)
+
+    #p(message = sprintf("Step  %g", 5))
+
+    osm_data_attributes <- query_location_attributes(query)
+
+
+    osm_data_attributes_masked <- transform_n_intersect_with_circle(
+      osm_data_attributes,
+      circle_mask,
+      plot_csr
+    )
+
+    #p(message = sprintf("Step  %g", 7))
+
+    circle_map <- make_circle_map(circle_mask, osm_data_attributes_masked, place_base_information)
+
+    w$hide()
+
+    mymap$dmap <- circle_map
+
+  })
+
+# when query button is hiit
+  # 1. calculate
+  # 2. redirect tab
+  output$map <- renderPlot({
+    mymap$dmap
+  })
 }
 
 shinyApp(ui, server)

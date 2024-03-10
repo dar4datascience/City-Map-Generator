@@ -276,10 +276,10 @@ return(circle_map)
 }
 
 # Example -------------------------------------------------------
-library(progressr)
-with_progress(demo_map <- make_artsy_map_from_place_name("Tlalpan, Mexico City")
-)
-
+# library(progressr)
+# with_progress(demo_map <- make_artsy_map_from_place_name("Tlalpan, Mexico City")
+# )
+#
 
 # ggsave(
 #   "test_city_circle_map.svg",
