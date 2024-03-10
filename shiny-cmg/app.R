@@ -34,9 +34,15 @@ ui <- page_navbar(
     title = "How to Use?",
     markdown(
       mds = c(
-        "hello _world_ ",
-        "# WORKING ON IT..... ",
-        "## world"
+        "Instructions: ",
+        "# How to Use?",
+        "1. **Enter City**: Type the name of the city you want to map in the text field.",
+"2. **Click 'Map it!'**: Press the button to generate the map.",
+"3. **Wait**: The map will take a moment to load.",
+"4. **Explore**: Once loaded, interact with the map to see details about the city.",
+"5. **Enjoy**",
+"<br><br>",
+"![test image](https://www.iliketowastemytime.com/sites/default/files/best-gifs-pt6-nonono-cat.gif)"
       )
     )
   ),
